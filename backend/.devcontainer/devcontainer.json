@@ -1,0 +1,22 @@
+{
+    "dockerComposeFile": "../../docker-compose.yml",
+    "service": "fastapi",
+    // "workspaceMount": "source=${localWorkspaceFolder},target=/opt/app-root/src/workspace/,type=bind",
+    "workspaceFolder": "/backend",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                // "ms-python.pylint",
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml",
+                "RobbOwen.synthwave-vscode"
+            ]
+        }
+    },
+    "postCreateCommand": "poetry install --no-root && poetry run uvicorn --reload --host 0.0.0.0 --port 8000 api.main:app"
+}
