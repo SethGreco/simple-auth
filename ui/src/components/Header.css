@@ -1,0 +1,30 @@
+/* src/components/Header.css */
+
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+  }
+  
+  .nav {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .nav-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+  }
+  
+  .nav-item {
+    margin-right: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .nav-link {
+    color: #fff;
+    text-decoration: none;
+  }

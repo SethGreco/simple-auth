@@ -1,0 +1,13 @@
+{
+    "dockerComposeFile": ["../../docker-compose.yml"],
+    "service": "ui",
+    "workspaceFolder": "/ui",
+    "customizations": {
+        "vscode": {
+            "settings": {},
+            "extensions": [
+                "RobbOwen.synthwave-vscode"
+            ]
+        }
+    }
+}

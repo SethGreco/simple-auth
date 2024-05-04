@@ -1,0 +1,21 @@
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 10%;
+}
+
+.home-main {
+text-align: center;
+}
+
+.title {
+font-weight: bold;
+margin-bottom: 10px;
+}
+
+.info {
+font-size: 16px;
+max-width: 50%; 
+margin: 0 auto;
+}
