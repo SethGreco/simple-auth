@@ -1,16 +1,22 @@
 FROM python:3.12-slim
 
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean
+
 WORKDIR /backend
 
-RUN pip install poetry
-
-COPY . .
-
-EXPOSE 8000
+RUN pip3 install poetry
 
 RUN poetry config virtualenvs.create false
 
+COPY pyproject.toml /backend
+
 RUN poetry install
+
+COPY /api /backend
+
+COPY /tests /backend
 
 CMD ["poetry", "run", "uvicorn", "--reload", "--host", "0.0.0.0", "--port", "8000","api.main:app"]
 

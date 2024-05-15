@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.33.0 (HEAD)
+  labels:
+    io.kompose.service: ui
+  name: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.33.0 (HEAD)
+      labels:
+        io.kompose.network/auth-fastapi-react-default: "true"
+        io.kompose.service: ui
+    spec:
+      containers:
+        - name: ui
+          image: auth-fastapi-react-ui
+          imagePullPolicy: Never
+          command: ["npm", "run", "dev"]
+          ports:
+            - containerPort: 5173
+              hostPort: 5173
+              protocol: TCP
+      restartPolicy: Always

@@ -1,5 +1,5 @@
-docker-compose.yml
 Dockerfile
 .devcontainer/
 .dockerignore
 poetry.lock
+.ruff_cache
