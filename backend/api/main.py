@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from api.database import engine, Base
 from api.routers import users, admin, login
 from fastapi.middleware.cors import CORSMiddleware
+from api.config import settings
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 origins = [
-    "http://localhost",
-    "http://localhost:5173",
+    settings.CLIENT_BASE_URL
 ]
 
 app.add_middleware(

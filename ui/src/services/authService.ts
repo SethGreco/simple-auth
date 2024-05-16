@@ -3,9 +3,9 @@ import { LoginResponse } from "./models";
 
 
 
-
 export const login = async (username: string, password: string) => {
-  const url = "http://localhost:8000/login/user/"
+  const base = import.meta.env.VITE_SERVER_BASE_URL;
+  const url = `${base}/login/user/`
   const response = await fetch(url, {
       method: 'POST',
       headers: {

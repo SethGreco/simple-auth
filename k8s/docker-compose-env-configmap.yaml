@@ -4,6 +4,9 @@ data:
   ALLOWED_IP_ADDRESSES: '["192.168.1.1", "172.20.0.1"]'
   DB_URL: postgresql://postgres:postgres@db/postgres
   JWT_SECRET_KEY: somesecretiwillmake
+  # Replace below values with deployment urls
+  # VITE_SERVER_BASE_URL: http://localhost:8000 
+  # CLIENT_BASE_URL: http://localhost:5173
 kind: ConfigMap
 metadata:
   labels:
