@@ -1,13 +1,12 @@
-from pydantic import BaseModel, field_validator, EmailStr, Field, ConfigDict
-from pydantic.alias_generators import to_camel
 import re
-from typing import Optional, List
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic.alias_generators import to_camel
 
 
 class BaseSchema(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_camel, populate_by_name=True, from_attributes=True
-    )
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
 
 class CreateUser(BaseSchema):
@@ -19,14 +18,11 @@ class CreateUser(BaseSchema):
     @field_validator("password")
     @classmethod
     def min_length_password(cls, password: str) -> str:
-        has_number = re.search(r"\d", password) is not None
-        has_uppercase = re.search(r"[A-Z]", password) is not None
-        if len(password) <= 11:
-            raise ValueError("password must be twelve character minimum")
-        elif has_number is False:
-            raise ValueError("password must contain at least one number")
-        elif has_uppercase is False:
-            raise ValueError("password must contain at least one uppercase letter")
+        password_pattern = r"^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{12,}$"
+        valid_password = re.match(password_pattern, password)
+
+        if valid_password is None:
+            raise ValueError("password much contain 12 characters, 1 uppercase and 1 number")
         return password
 
 

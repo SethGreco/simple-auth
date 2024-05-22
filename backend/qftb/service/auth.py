@@ -1,13 +1,13 @@
-from datetime import timedelta, datetime, timezone
-from fastapi import Depends, HTTPException, status, Request
+from datetime import datetime, timedelta, timezone
+
+from fastapi import Depends, HTTPException, Request, status
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
 from qftb import models
-from qftb.util.password import verify_password
-from qftb.database import get_db
 from qftb.config import settings
-
-from sqlalchemy.orm import Session
-from jose import jwt, JWTError
+from qftb.database import get_db
+from qftb.util.password import verify_password
 
 
 def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> dict:
@@ -86,7 +86,7 @@ def validate_token(authorization: str) -> None:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from None
 
 
 def restrict_ip_address(req: Request) -> str:
@@ -101,7 +101,5 @@ def restrict_ip_address(req: Request) -> str:
     """
     client_ip = req.client.host
     if client_ip not in settings.ALLOWED_IP_ADDRESSES:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Unreachable Host"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unreachable Host")
     return client_ip

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
-from qftb.schemas import AdminUserView
-from qftb import models
-from qftb.database import get_db
 from sqlalchemy.orm import Session
 
+from qftb import models
+from qftb.database import get_db
+from qftb.schemas import AdminUserView
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 

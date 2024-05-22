@@ -16,7 +16,7 @@ export const login = async (username: string, password: string) => {
   const data: LoginResponse = await response.json()
   
   if (response.ok) {
-    localStorage.setItem('token', data.access_token as string)
+    localStorage.setItem('token', data.accessToken as string)
     return {
       "status": 200,
       "message": "Success"
@@ -43,9 +43,9 @@ export const getAuthToken = ():string | null => {
 
 export const isAuthenticated = (): string | Response => {
     const token = getAuthToken()
-    // TODO: Need to validate token has not expired
     if (!token) {
         return redirect('/login')
     }
-    return token
+    // TODO: Need to validate token has not expired
+      return token
   };

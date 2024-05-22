@@ -1,16 +1,15 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+
+import sqlalchemy.exc
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from psycopg2.errors import UniqueViolation
+from sqlalchemy.orm import Session
 
 from qftb import models
-from qftb.schemas import Message, UserResponse, CreateUser
 from qftb.database import get_db
-from qftb.util.password import hash
+from qftb.schemas import CreateUser, Message, UserResponse
 from qftb.service.auth import validate_token
-
-from sqlalchemy.orm import Session
-from psycopg2.errors import UniqueViolation
-import sqlalchemy.exc
-
+from qftb.util.password import hash
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -37,11 +36,11 @@ def read_users_non_admin(db: Session = Depends(get_db)):
     try:
         users = db.query(models.User).all()
         return users
-    except Exception:
+    except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
-        )
+        ) from err
 
 
 @router.get(
@@ -72,11 +71,11 @@ def read_single_user_non_admin(
     try:
         user = db.query(models.User).filter(models.User.id == id).one()
         return user
-    except sqlalchemy.exc.NoResultFound:
+    except sqlalchemy.exc.NoResultFound as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resource not found",
-        )
+        ) from err
 
 
 @router.post(
@@ -111,10 +110,10 @@ def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) 
         if isinstance(err.orig, UniqueViolation):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="User already exists"
-            )
-    except Exception:
+            ) from err
+    except Exception as err:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create user",
-        )
+        ) from err

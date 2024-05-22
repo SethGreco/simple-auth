@@ -1,11 +1,13 @@
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi import APIRouter, Depends, status
-from qftb.schemas import Message, Token
-from qftb.database import get_db
-from qftb.service.auth import auth_user, generate_token, restrict_ip_address
-from sqlalchemy.orm import Session
 from datetime import timedelta
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, status, Header
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from sqlalchemy.orm import Session
+
+from qftb.database import get_db
+from qftb.schemas import Message, Token
+from qftb.service.auth import auth_user, generate_token, restrict_ip_address, validate_token
 
 router = APIRouter(
     prefix="/login",
@@ -52,4 +54,10 @@ def login_admin(
     Returns:
     - Bool
     """
+    return True
+
+
+@router.get("/valid/")
+def user_valid_check(authorization: Annotated[str | None, Header()] = None):
+    validate_token(authorization)
     return True

@@ -1,16 +1,17 @@
-from fastapi import Request, HTTPException, status
-from qftb.service.auth import (
-    restrict_ip_address,
-    validate_token,
-    generate_token,
-    auth_user,
-)
-from qftb.config import settings
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, Mock, patch
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
+
 import pytest
+from fastapi import HTTPException, Request, status
+from jose import JWTError, jwt
+from qftb.config import settings
+from qftb.service.auth import (
+    auth_user,
+    generate_token,
+    restrict_ip_address,
+    validate_token,
+)
+from sqlalchemy.orm import Session
 
 
 # Positive Test Case

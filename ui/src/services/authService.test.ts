@@ -1,4 +1,4 @@
-// import { redirect } from "react-router-dom";
+import { redirect } from "react-router-dom";
 import * as authMock from './authService';
 
 
@@ -18,7 +18,7 @@ describe('getAuthToken', () => {
     })
 
     test('returns null when token is not present in localStorage', () => {
-        jest.spyOn(Storage.prototype, 'getItem').mockReturnValueOnce('token');
+        jest.spyOn(Storage.prototype, 'getItem').mockReturnValueOnce(null);
 
         expect(authMock.getAuthToken()).toBeNull();
         expect(localStorage.getItem).toHaveBeenCalledWith('token');
@@ -26,6 +26,23 @@ describe('getAuthToken', () => {
 })
 
 
-// jest.mock('react-router-dom', () => ({
-//     redirect: jest.fn()
-// }))
+jest.mock('react-router-dom', () => ({
+    redirect: jest.fn()
+}))
+
+describe('isAuthenticated', () => {
+    test('returns token when present', () => {
+        const mock = jest.spyOn(authMock, 'getAuthToken');
+        mock.mockImplementation(() => 'dummyToken');
+        const result = authMock.isAuthenticated();
+        expect(result).toBe('dummyToken');
+        expect(authMock.getAuthToken).toHaveBeenCalled();
+        expect(redirect).not.toHaveBeenCalled();
+    });
+    test('returns redirect when token not present', () => {
+        const mock = jest.spyOn(authMock, 'getAuthToken');
+        mock.mockImplementation(() => null);
+        authMock.isAuthenticated();
+        expect(redirect).toHaveBeenCalled();
+    });
+})

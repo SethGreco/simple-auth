@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from qftb.database import engine, Base
-from qftb.routers import users, admin, login
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from qftb.exceptions import global_handler
+
 from qftb.config import settings
+from qftb.database import Base, engine
+from qftb.exceptions import global_handler
+from qftb.routers import admin, login, users
 
 # Comment out if you want to build from DDL file.
 Base.metadata.create_all(bind=engine)
