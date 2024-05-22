@@ -1,11 +1,11 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 
-from api import models
-from api.schemas import UserResponse, CreateUser
-from api.database import get_db
-from api.util.password import hash
-from api.service.auth import validate_token
+from qftb import models
+from qftb.schemas import Message, UserResponse, CreateUser
+from qftb.database import get_db
+from qftb.util.password import hash
+from qftb.service.auth import validate_token
 
 from sqlalchemy.orm import Session
 from psycopg2.errors import UniqueViolation
@@ -37,11 +37,11 @@ def read_users_non_admin(db: Session = Depends(get_db)):
     try:
         users = db.query(models.User).all()
         return users
-    except Exception as err:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
-        ) from err
+        )
 
 
 @router.get(
@@ -49,6 +49,7 @@ def read_users_non_admin(db: Session = Depends(get_db)):
     response_model=UserResponse,
     summary="Retrieve single user",
     description="",
+    responses={404: {"model": Message}},
 )
 def read_single_user_non_admin(
     id: int,
@@ -71,19 +72,19 @@ def read_single_user_non_admin(
     try:
         user = db.query(models.User).filter(models.User.id == id).one()
         return user
-    except sqlalchemy.exc.NoResultFound as err:
+    except sqlalchemy.exc.NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User does not exist with that id",
-        ) from err
-    except Exception as err:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error",
-        ) from err
+            detail="Resource not found",
+        )
 
 
-@router.post("/", response_model={}, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=Message,
+    status_code=status.HTTP_201_CREATED,
+    responses={409: {"model": Message}},
+)
 def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> dict:
     """
     POST create a single user
@@ -105,15 +106,15 @@ def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) 
         db.add(user_insert)
         db.commit()
         db.refresh(user_insert)
-        return {"status": "User created successfully"}
+        return Message(detail="User created successfully")
     except sqlalchemy.exc.IntegrityError as err:
         if isinstance(err.orig, UniqueViolation):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="User already exists"
-            ) from err
-    except Exception as err:
+            )
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create user",
-        ) from err
+        )

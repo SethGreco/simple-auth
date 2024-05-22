@@ -1,11 +1,11 @@
 import { redirect } from "react-router-dom";
 import { LoginResponse } from "./models";
+import { config } from "../config/config"
 
 
 
 export const login = async (username: string, password: string) => {
-  const base = import.meta.env.VITE_SERVER_BASE_URL;
-  const url = `${base}/login/user/`
+  const url = `${config.backendUrl}/login/user/`
   const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -43,6 +43,7 @@ export const getAuthToken = ():string | null => {
 
 export const isAuthenticated = (): string | Response => {
     const token = getAuthToken()
+    // TODO: Need to validate token has not expired
     if (!token) {
         return redirect('/login')
     }

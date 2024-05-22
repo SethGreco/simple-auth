@@ -1,16 +1,16 @@
 from datetime import timedelta, datetime, timezone
 from fastapi import Depends, HTTPException, status, Request
 
-from api import models
-from api.util.password import verify_password
-from api.database import get_db
-from api.config import settings
+from qftb import models
+from qftb.util.password import verify_password
+from qftb.database import get_db
+from qftb.config import settings
 
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 
 
-def auth_user(username: str, password: str, db: Session = Depends(get_db)):
+def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> dict:
     """
     Authenitcate User
 
@@ -37,7 +37,7 @@ def auth_user(username: str, password: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    return {"id": 1, "username": username}
+    return {"id": user.id, "username": username}
 
 
 def generate_token(user_info: dict, expires_delta: timedelta) -> str:

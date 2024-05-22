@@ -1,5 +1,12 @@
-import { redirect } from "react-router-dom";
+// import { redirect } from "react-router-dom";
 import * as authMock from './authService';
+
+
+jest.mock("../config/config", () => ({
+    config: {
+        backendUrl: "http://localhost:8000",
+    },
+  }));
 
 describe('getAuthToken', () => {
     test('returns token when it is present in localStorage', () => {
@@ -19,6 +26,6 @@ describe('getAuthToken', () => {
 })
 
 
-jest.mock('react-router-dom', () => ({
-    redirect: jest.fn()
-}))
+// jest.mock('react-router-dom', () => ({
+//     redirect: jest.fn()
+// }))

@@ -14,9 +14,9 @@ COPY pyproject.toml /backend
 
 RUN poetry install
 
-COPY /api /backend
+COPY /qftb /backend
 
 COPY /tests /backend
 
-CMD ["poetry", "run", "uvicorn", "--reload", "--host", "0.0.0.0", "--port", "8000","api.main:app"]
+CMD ["poetry", "run", "uvicorn", "--reload", "--host", "0.0.0.0", "--port", "8000","qftb.main:app"]
 

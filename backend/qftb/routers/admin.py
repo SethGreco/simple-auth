@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from api.schemas import AdminUserView
-from api import models
-from api.database import get_db
+from qftb.schemas import AdminUserView
+from qftb import models
+from qftb.database import get_db
 from sqlalchemy.orm import Session
 
 
