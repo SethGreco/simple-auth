@@ -17,12 +17,12 @@ class CreateUser(BaseSchema):
 
     @field_validator("password")
     @classmethod
-    def min_length_password(cls, password: str) -> str:
+    def password_pattern(cls, password: str) -> str:
         password_pattern = r"^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{12,}$"
         valid_password = re.match(password_pattern, password)
 
         if valid_password is None:
-            raise ValueError("password much contain 12 characters, 1 uppercase and 1 number")
+            raise ValueError("password must contain 12 characters, 1 uppercase and 1 number")
         return password
 
 

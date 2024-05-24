@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from qftb import models
 from qftb.database import get_db
-from qftb.schemas import CreateUser, Message, UserResponse
+from qftb.schemas import CreateUser, ErrorResponse, Message, UserResponse
 from qftb.service.auth import validate_token
 from qftb.util.password import hash
 
@@ -82,7 +82,11 @@ def read_single_user_non_admin(
     "/",
     response_model=Message,
     status_code=status.HTTP_201_CREATED,
-    responses={409: {"model": Message}},
+    responses={
+        status.HTTP_201_CREATED: {"model": Message},
+        status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
+        409: {"model": Message}
+        },
 )
 def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> dict:
     """

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     ALGO: str
     ALLOWED_IP_ADDRESSES: list[str]
     CLIENT_BASE_URL: str
+    ENVIRONMENT: str
 
 
 settings = Settings()
