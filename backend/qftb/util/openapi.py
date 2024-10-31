@@ -3,7 +3,7 @@ from fastapi.openapi.utils import get_openapi
 
 from ..config import settings
 
-SHOW_DOCS_ENVIRONMENT = ("local")  # explicit list of allowed envs\
+SHOW_DOCS_ENVIRONMENT = "local"  # explicit list of allowed envs\
 
 
 def set_docs_url() -> str | None:
@@ -17,10 +17,7 @@ def custom_openapi(app: FastAPI) -> None:
         if app.openapi_schema:
             return app.openapi_schema
         app.openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes
+            title=app.title, version=app.version, description=app.description, routes=app.routes
         )
         for _, method_item in app.openapi_schema.get("paths").items():
             for _, param in method_item.items():
@@ -29,4 +26,5 @@ def custom_openapi(app: FastAPI) -> None:
                 if "422" in responses:
                     del responses["422"]
         return app.openapi_schema
+
     app.openapi = replace_http_422

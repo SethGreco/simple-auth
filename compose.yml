@@ -2,14 +2,13 @@ services:
   fastapi:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.dev
     ports:
       - 8000:8000
     volumes:
       - ./backend:/backend
     env_file:
       - compose.env
-    # tty: true
     depends_on:
       db:
         condition: service_healthy
@@ -19,18 +18,26 @@ services:
       timeout: 10s
       retries: 3
 
+  # ui:
+  #   build:
+  #     context: ./ui
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 5173:5173
+  #   volumes:
+  #     - ./ui:/ui
+  #     - /ui/node_modules
+  #   env_file:
+  #    - vite.env
+  #   command: npm run dev
   ui:
     build:
       context: ./ui
       dockerfile: Dockerfile
     ports:
-      - 5173:5173
-    volumes:
-      - ./ui:/ui
-      - /ui/node_modules
+      - 80:80
     env_file:
      - vite.env
-    command: npm run dev
     
 
   db:

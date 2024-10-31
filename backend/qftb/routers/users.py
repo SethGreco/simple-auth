@@ -5,11 +5,11 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.orm import Session
 
-from qftb import models
-from qftb.database import get_db
-from qftb.schemas import CreateUser, ErrorResponse, Message, UserResponse
-from qftb.service.auth import validate_token
-from qftb.util.password import hash
+from .. import models
+from ..database import get_db
+from ..schemas import CreateUser, ErrorResponse, Message, UserResponse
+from ..service.auth import validate_token
+from ..util.password import hash
 
 router = APIRouter(prefix="/user", tags=["User"])
 

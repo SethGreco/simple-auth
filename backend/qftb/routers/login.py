@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, Header, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
 
-from qftb.database import get_db
-from qftb.schemas import Message, Token
-from qftb.service.auth import auth_user, generate_token, restrict_ip_address, validate_token
+from ..database import get_db
+from ..schemas import Message, Token
+from ..service.auth import auth_user, generate_token, restrict_ip_address, validate_token
 
 router = APIRouter(
     prefix="/login",

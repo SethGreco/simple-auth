@@ -4,10 +4,10 @@ from fastapi import Depends, HTTPException, Request, status
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from qftb import models
-from qftb.config import settings
-from qftb.database import get_db
-from qftb.util.password import verify_password
+from .. import models
+from ..config import settings
+from ..database import get_db
+from ..util.password import verify_password
 
 
 def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> dict:

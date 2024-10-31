@@ -4,6 +4,7 @@ version = "0.0.0"
 description = "Fastapi, devcontainer, poetry boilerplate with auth"
 authors = ["Seth Greco"]
 readme = "README.md"
+packages = [{ include = "qftb" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"

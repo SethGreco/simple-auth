@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from qftb.config import settings
+from .config import settings
 
 engine = create_engine(settings.DB_URL, echo=False)
 
