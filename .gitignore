@@ -55,3 +55,6 @@ archive.zip
 
 # ruff
 .ruff_cache
+
+poetry.lock
+package-lock.json
