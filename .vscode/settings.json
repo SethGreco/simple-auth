@@ -1,0 +1,32 @@
+{
+    "files.exclude": {
+        "**/__pycache__/": true,
+        "**/.pytest_cache/":true,
+        "**/.ruff_cache/": true
+    },
+    "ruff.lint.run": "onSave",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "python.analysis.typeCheckingMode": "standard",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.formatOnSave": true
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": false,
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "files.autoSave": "onFocusChange",
+        "prettier.tabWidth": 2
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "prettier.tabWidth": 2
+    }
+
+}
