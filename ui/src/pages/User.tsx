@@ -1,17 +1,15 @@
-import React from 'react';
-import { logout } from '../services/authService';
-import { useNavigate } from 'react-router-dom';
-
+import React from "react";
+import { logout } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const User: React.FC = () => {
-
   const navigate = useNavigate();
 
   const handleLogOut = async (event: React.FormEvent<HTMLButtonElement>) => {
     event.preventDefault();
     await logout();
-    navigate('/home')
-  }
+    navigate("/home");
+  };
 
   return (
     <div>

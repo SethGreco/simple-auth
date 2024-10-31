@@ -3,7 +3,10 @@ import { LoginResponse } from "./models";
 import { config } from "../config/config";
 
 export const login = async (username: string, password: string) => {
-  const url = `${config.backendUrl}/login/user/`;
+  // TODO: fix for devcontainer
+  const url = `http://localhost:8000/login/user/`;
+
+  // const url = `${config.backendUrl}/login/user/`;
   const response = await fetch(url, {
     method: "POST",
     headers: {

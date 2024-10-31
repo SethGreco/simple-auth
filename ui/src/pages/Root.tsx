@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from "react-router-dom";
 
-import Header from '../components/Header';
+import Header from "../components/Header";
 // import AuthProvider from '../AuthProvider';
 
 function RootLayout() {
@@ -8,7 +8,7 @@ function RootLayout() {
 
   return (
     <>
-    {/* <AuthProvider> */}
+      {/* <AuthProvider> */}
       <Header />
       <main>
         {/* {navigation.state === 'loading' && <p>Loading...</p>} */}
