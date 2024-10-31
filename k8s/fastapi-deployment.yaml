@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.33.0 (HEAD)
+  labels:
+    io.kompose.service: fastapi
+  name: fastapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: fastapi
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.33.0 (HEAD)
+      labels:
+        io.kompose.network/auth-fastapi-react-default: "true"
+        io.kompose.service: fastapi
+    spec:
+      containers:
+        - env:
+            - name: ALGO
+              valueFrom:
+                configMapKeyRef:
+                  key: ALGO
+                  name: docker-compose-env
+            - name: ALLOWED_IP_ADDRESSES
+              valueFrom:
+                configMapKeyRef:
+                  key: ALLOWED_IP_ADDRESSES
+                  name: docker-compose-env
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_URL
+                  name: docker-compose-env
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: JWT_SECRET_KEY
+                  name: docker-compose-env
+          image: auth-fastapi-react-fastapi
+          name: fastapi
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+              hostPort: 8000
+              protocol: TCP
+      restartPolicy: Always

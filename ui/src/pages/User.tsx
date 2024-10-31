@@ -12,7 +12,7 @@ const User: React.FC = () => {
     await logout();
     navigate('/home')
   }
-  
+
   return (
     <div>
       <h1>User Dashboard</h1>

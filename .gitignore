@@ -13,7 +13,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -27,7 +26,6 @@ dist-ssr
 .idea
 .ipynb_checkpoints
 .mypy_cache
-.vscode
 __pycache__
 .pytest_cache
 htmlcov
@@ -54,3 +52,9 @@ archive.zip
 
 # macOS
 .DS_Store
+
+# ruff
+.ruff_cache
+
+poetry.lock
+package-lock.json

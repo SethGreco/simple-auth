@@ -1,0 +1,23 @@
+{
+    "dockerComposeFile": "compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode",
+                "ms-azuretools.vscode-docker",
+                "redhat.vscode-yaml",
+                "tamasfe.even-better-toml",
+                "RobbOwen.synthwave-vscode"
+            ]
+        }
+    },
+    "postCreateCommand": "(cd backend && poetry install --no-root) && (cd ui && npm i)"
+}

@@ -1,12 +1,10 @@
-from fastapi.testclient import TestClient
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
-
-from api.database import Base, get_db
-from api.main import app
 import pytest
+from fastapi.testclient import TestClient
+from qftb.database import Base, get_db
+from qftb.main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 
 @pytest.fixture(name="session")
@@ -29,11 +27,10 @@ def session_fixture():
             yield db
         finally:
             db.close()
-    
+
     app.dependency_overrides[get_db] = override_get_db
 
     yield TestingSessionLocal()
-
 
 
 @pytest.fixture(name="client")

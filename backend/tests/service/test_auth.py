@@ -1,16 +1,18 @@
-from fastapi import Request, HTTPException, status
-from api.service.auth import (
-    restrict_ip_address,
-    validate_token,
-    generate_token,
-    auth_user,
-)
-from api.config import settings
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, Mock, patch
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
+
 import pytest
+from fastapi import HTTPException, Request, status
+from jose import JWTError, jwt
+from qftb.config import settings
+from qftb.service.auth import (
+    auth_user,
+    generate_token,
+    restrict_ip_address,
+    validate_token,
+)
+from sqlalchemy.orm import Session
+
 
 # Positive Test Case
 def test_restrict_ip_address_allowed():
@@ -47,7 +49,7 @@ def test_validate_token_valid():
     authorization = "Bearer valid_token"
 
     # Mocking jwt.decode to return without errors
-    with patch("api.service.auth.jwt.decode"):
+    with patch("qftb.service.auth.jwt.decode"):
         validate_token(authorization)
 
     # No exception should be raised
@@ -58,7 +60,7 @@ def test_validate_token_invalid_token():
     authorization = "Bearer invalid_token"
 
     # Mocking jwt.decode to raise JWTError
-    with patch("api.service.auth.jwt.decode", side_effect=JWTError):
+    with patch("qftb.service.auth.jwt.decode", side_effect=JWTError):
         with pytest.raises(HTTPException) as exc_info:
             validate_token(authorization)
 
@@ -87,7 +89,7 @@ def test_generate_token():
 
     # Mock current datetime to a fixed value
     fixed_datetime = datetime.now(timezone.utc)
-    with patch("api.service.auth.datetime") as mock_datetime:
+    with patch("qftb.service.auth.datetime") as mock_datetime:
         mock_datetime.now.return_value = fixed_datetime
 
         # Generate token
@@ -108,17 +110,21 @@ def test_auth_user_successful():
     mock_db = MagicMock(spec=Session)
     mock_user = MagicMock()
     mock_user.email = "test@example.com"
-    
+    mock_user.id = 1
+
     # Mock the ph.verify function from argon2 library
     with patch("argon2.PasswordHasher.verify") as mock_verify:
         # Set the return value of mock_verify to True to simulate successful password verification
         mock_verify.return_value = True
-        
+
         # Set the hashed password attribute of the mocked user object
         mock_user.hashed_password = "hashed_password"
-        
+
         # Set up the mock to return the user object
         mock_db.query.return_value.filter.return_value.first.return_value = mock_user
-        
+
         # Call the function and assert the returned dictionary
-        assert auth_user("test@example.com", "password", db=mock_db) == {"id": 1, "username": "test@example.com"}
+        assert auth_user("test@example.com", "password", db=mock_db) == {
+            "id": 1,
+            "username": "test@example.com",
+        }
