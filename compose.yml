@@ -18,27 +18,18 @@ services:
       timeout: 10s
       retries: 3
 
-  # ui:
-  #   build:
-  #     context: ./ui
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 5173:5173
-  #   volumes:
-  #     - ./ui:/ui
-  #     - /ui/node_modules
-  #   env_file:
-  #    - vite.env
-  #   command: npm run dev
   ui:
     build:
       context: ./ui
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.dev
     ports:
-      - 80:80
+      - 5173:5173
+    volumes:
+      - ./ui:/ui
+      - /ui/node_modules
     env_file:
      - vite.env
-    
+    command: npm run dev
 
   db:
     image: postgres:latest

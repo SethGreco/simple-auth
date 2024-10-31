@@ -1,10 +1,11 @@
 import Home from './pages/Home';
 import Login from './pages/Login';
 import User from './pages/User';
-import { isAuthenticated } from './services/authService';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Root from './pages/Root';
 import Error from './pages/Error';
+import ProtectedRoute from './components/ProtectedRoute';
+import { getAuthToken } from './services/authService';
 
 
 
@@ -24,10 +25,16 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: '/user',
-        element: <User />,
-        loader: isAuthenticated
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: '/user',
+            element: <User />,
+            loader: getAuthToken
+          },
+        ]
       },
+
     ],
   },
 ]);
