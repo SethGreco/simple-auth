@@ -1,40 +1,36 @@
-import Home from './pages/Home';
-import Login from './pages/Login';
-import User from './pages/User';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import Root from './pages/Root';
-import Error from './pages/Error';
-import ProtectedRoute from './components/ProtectedRoute';
-import { getAuthToken } from './services/authService';
-
-
-
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import User from "./pages/User";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import Root from "./pages/Root";
+import Error from "./pages/Error";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { getAuthToken } from "./services/authService";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Root />,
     errorElement: <Error />,
     children: [
       {
-        path: '/home',
+        path: "/home",
         element: <Home />,
       },
       {
-        path: '/login',
+        path: "/login",
         element: <Login />,
       },
       {
         element: <ProtectedRoute />,
         children: [
           {
-            path: '/user',
+            path: "/user",
             element: <User />,
-            loader: getAuthToken
+            loader: getAuthToken,
           },
-        ]
+        ],
       },
-
     ],
   },
 ]);
