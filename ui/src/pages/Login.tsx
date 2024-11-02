@@ -3,9 +3,11 @@ import { login } from "../services/authService";
 
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthProvider";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,11 +22,11 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const res = await login(email, password);
-    if (res.status == 200) {
+    const status = await auth?.loginAction(email, password);
+    if (status == 200) {
       navigate("/user");
     } else {
-      console.log(res);
+      console.log(status);
       // TODO - let user know login was unsuccesful
     }
   };

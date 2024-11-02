@@ -1,57 +1,85 @@
+import React, { useContext, createContext, useState, useEffect } from "react";
 
+interface AuthContextProps {
+  token: string | null;
+  loginAction: (
+    username: string,
+    password: string
+  ) => Promise<number | undefined>;
+  logOut: () => void;
+  user: UserDetail | null;
+}
 
-// import { useContext, createContext, useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { config } from "./config/config";
+interface UserDetail {
+  sub: string;
+  id: number;
+  exp: number;
+}
 
-// const AuthContext = createContext();
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-// const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
-//   const [token, setToken] = useState(localStorage.getItem("site") || "");
-//   const navigate = useNavigate();
-//   const loginAction = async (username: string, password: string) => {
-//     try {
-//       const response = await fetch(`${config.backendUrl}/login/user/`, {
-//         method: "POST",
-//         headers: {
-//           'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
-//           "Content-Type": "application/json",
-//         }
-//       });
-//       const res = await response.json();
-//       if (res.data) {
-//         setUser(res.data.user);
-//         setToken(res.token);
-//         localStorage.setItem("site", res.token);
-//         navigate("/dashboard");
-//         return;
-//       }
-//       throw new Error(res.message);
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
+export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
 
-//   const logOut = () => {
-//     setUser(null);
-//     setToken("");
-//     localStorage.removeItem("site");
-//     navigate("/login");
-//   };
+  const url = `http://localhost:8000/login/user/`;
 
-//   return (
-//     <AuthContext.Provider value={{ token, user, loginAction, logOut }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
+  const loginAction = async (username: string, password: string) => {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${btoa(`${username}:${password}`)}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const res = await response.json();
+      console.log(res, response);
+      if (res.accessToken) {
+        setToken(res.accessToken);
+        const details = parseJwt(res.accessToken);
+        setUser(details);
+        return response.status;
+      }
+      throw new Error(res.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-// };
+  const logOut = () => {
+    setToken(null);
+    setUser(null);
+  };
 
-// export default AuthProvider;
+  const contextValue: AuthContextProps = {
+    token,
+    loginAction,
+    logOut,
+    user,
+  };
 
-// export const useAuth = () => {
-//   return useContext(AuthContext);
-// };
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
+};
 
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
+const parseJwt: any = (token: string) => {
+  var base64Url = token.split(".")[1];
+  var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  var jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split("")
+      .map(function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
+
+  return JSON.parse(jsonPayload);
+};

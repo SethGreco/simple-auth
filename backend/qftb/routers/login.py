@@ -34,7 +34,7 @@ def login_user(
     - Token
     """
     user_info = auth_user(credentials.username, credentials.password, db)
-    token = generate_token(user_info, timedelta(minutes=20))
+    token = generate_token(user_info, timedelta(minutes=1))
     return Token(access_token=token, token_type="bearer")
 
 

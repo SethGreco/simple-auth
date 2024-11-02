@@ -85,8 +85,8 @@ def read_single_user_non_admin(
     responses={
         status.HTTP_201_CREATED: {"model": Message},
         status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse},
-        409: {"model": Message}
-        },
+        409: {"model": Message},
+    },
 )
 def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> dict:
     """

@@ -5,7 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Root from "./pages/Root";
 import Error from "./pages/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { getAuthToken } from "./services/authService";
+import { AuthProvider } from "./AuthProvider";
 
 const router = createBrowserRouter([
   {
@@ -27,7 +27,6 @@ const router = createBrowserRouter([
           {
             path: "/user",
             element: <User />,
-            loader: getAuthToken,
           },
         ],
       },
@@ -36,7 +35,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;

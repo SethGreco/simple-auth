@@ -57,7 +57,7 @@ def generate_token(user_info: dict, expires_delta: timedelta) -> str:
     return jwt.encode(encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGO)
 
 
-def validate_token(authorization: str) -> None:
+def validate_token(authorization: str | None) -> None:
     """
     Validate Token
 

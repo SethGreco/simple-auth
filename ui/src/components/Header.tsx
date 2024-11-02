@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Header.css";
+import { useAuth } from "../AuthProvider";
 
 const Header: React.FC = () => {
+  const auth = useAuth();
   return (
     <header className="header">
       <nav className="nav">
@@ -22,6 +24,13 @@ const Header: React.FC = () => {
               Login
             </Link>
           </li>
+          {auth?.token && (
+            <li className="nav-item">
+              <Link to="" className="nav-link">
+                Optional
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
     </header>
