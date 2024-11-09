@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "../contexts/AuthProvider";
 
 const User: React.FC = () => {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ const User: React.FC = () => {
 
   const handleLogOut = async (event: React.FormEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    await auth?.logOut();
+    auth?.logOut();
     navigate("/home");
   };
 

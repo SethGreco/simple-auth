@@ -1,40 +1,63 @@
 import React, { useContext, createContext, useState, useEffect } from "react";
+import { config } from "../config/config";
 
 interface AuthContextProps {
-  token: string | null;
+  readonly token: string | null;
   loginAction: (
     username: string,
     password: string
   ) => Promise<number | undefined>;
   logOut: () => void;
-  user: UserDetail | null;
+  readonly user: UserDetail | null;
 }
 
 interface UserDetail {
-  sub: string;
-  id: number;
-  exp: number;
+  readonly sub: string;
+  readonly id: number;
+  readonly exp: number;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserDetail | null>(null);
 
-  const url = `http://localhost:8000/login/user/`;
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const valid_url = `${config.backendUrl}/login/refresh`;
+        const response = await fetch(valid_url, { credentials: "include" });
+
+        if (response.status === 200) {
+          // TODO: log user back in
+        } else if (response.status === 401) {
+          console.log("handle unauth");
+          // TODO: Do nothing ?
+        }
+      } catch (err) {
+        console.log(err);
+        throw err;
+      }
+    };
+
+    restoreSession();
+  }, []);
 
   const loginAction = async (username: string, password: string) => {
     try {
+      const url = `${config.backendUrl}/login/user/`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
           Authorization: `Basic ${btoa(`${username}:${password}`)}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
       });
       const res = await response.json();
-      console.log(res, response);
       if (res.accessToken) {
         setToken(res.accessToken);
         const details = parseJwt(res.accessToken);
@@ -44,10 +67,16 @@ export const AuthProvider = ({ children }) => {
       throw new Error(res.message);
     } catch (err) {
       console.error(err);
+      return;
     }
   };
 
-  const logOut = () => {
+  const logOut = async () => {
+    const url = `${config.backendUrl}/login/logout`;
+    const response = await fetch(url, {
+      credentials: "include",
+    });
+    const res = await response.json();
     setToken(null);
     setUser(null);
   };
@@ -80,6 +109,5 @@ const parseJwt: any = (token: string) => {
       })
       .join("")
   );
-
   return JSON.parse(jsonPayload);
 };

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { login } from "../services/authService";
 
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "../contexts/AuthProvider";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..config import settings
 from ..database import get_db
-from ..util.password import verify_password
+from ..schemas import Message
+from ..util.password import hash, verify_password
 
 
 def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> dict:
@@ -52,6 +53,13 @@ def generate_token(user_info: dict, expires_delta: timedelta) -> str:
     - JWT: String
     """
     encode = {"sub": user_info["username"], "id": user_info["id"]}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({"exp": expires})
+    return jwt.encode(encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGO)
+
+
+def generate_refresh_token(user_info: dict, expires_delta: timedelta) -> str:
+    encode = {"id": user_info["id"]}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp": expires})
     return jwt.encode(encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGO)
@@ -103,3 +111,57 @@ def restrict_ip_address(req: Request) -> str:
     if client_ip not in settings.ALLOWED_IP_ADDRESSES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unreachable Host")
     return client_ip
+
+
+def store_refresh_token(refresh_token: str, user_id: int, db: Session = Depends(get_db)) -> Message:
+    try:
+        token = models.RefreshToken(
+            user_id=user_id,
+            refresh_token=refresh_token,
+            expires_at=datetime.utcnow() + timedelta(days=1),
+            created_at=datetime.utcnow(),
+            revoked=False,
+        )
+        db.add(token)
+        db.commit()
+        db.refresh(token)
+        return Message(detail="Token Stored")
+    except Exception as err:
+        print(f"Some err {err}")
+        raise
+
+
+def invalidate_refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    info = jwt.decode(refresh_token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
+
+    print("refresh_token", refresh_token)
+    print("user info", info)
+    try:
+        token = (
+            db.query(models.RefreshToken)
+            .filter(
+                models.RefreshToken.refresh_token == refresh_token,
+                models.RefreshToken.user_id == info["id"],
+            )
+            .first()
+        )
+
+        if not token:
+            raise HTTPException(detail="Token Not found", status_code=404)
+
+        token.revoked = True
+        db.commit()
+
+        return {"message": "Refresh token invalidated successfully"}
+    except Exception as err:
+        raise
+
+
+def check_for_valid_refresh(refresh_token: str, user_id: int, db: Session = Depends(get_db)):
+    token = (
+        db.query(models.RefreshToken)
+        .filter(models.RefreshToken.user_id == user_id, models.RefreshToken.revoked == False)
+        .first()
+    )
+
+    return

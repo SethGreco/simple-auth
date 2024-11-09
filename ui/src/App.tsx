@@ -4,8 +4,8 @@ import User from "./pages/User";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Root from "./pages/Root";
 import Error from "./pages/Error";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthProvider } from "./AuthProvider";
+import ProtectedRoute from "./pages/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthProvider";
 
 const router = createBrowserRouter([
   {
@@ -34,12 +34,12 @@ const router = createBrowserRouter([
   },
 ]);
 
-function App() {
+const App = () => {
   return (
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
   );
-}
+};
 
 export default App;
