@@ -157,11 +157,43 @@ def invalidate_refresh_token(refresh_token: str, db: Session = Depends(get_db)):
         raise
 
 
-def check_for_valid_refresh(refresh_token: str, user_id: int, db: Session = Depends(get_db)):
-    token = (
-        db.query(models.RefreshToken)
-        .filter(models.RefreshToken.user_id == user_id, models.RefreshToken.revoked == False)
-        .first()
-    )
+def check_for_valid_refresh(refresh_token: str, db: Session = Depends(get_db)):
+    info = jwt.decode(refresh_token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
 
-    return
+    expires = info["exp"]
+    if datetime.now(timezone.utc).timestamp() > expires:
+        raise HTTPException(detail="refresh token is expired", status_code=401)
+
+    try:
+        token = (
+            db.query(models.RefreshToken)
+            .filter(
+                models.RefreshToken.refresh_token == refresh_token,
+                models.RefreshToken.user_id == info["id"],
+                models.RefreshToken.revoked == False,
+            )
+            .first()
+        )
+
+        if not token:
+            raise HTTPException(detail="Token Not found", status_code=404)
+
+        user = db.query(models.User).filter(models.User.id == info["id"]).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+            )
+        new_obj = {"id": user.id, "username": user.email}
+        new_access_token = generate_token(new_obj, timedelta(minutes=20))
+        new_refresh_token = generate_refresh_token(new_obj, timedelta(days=1))
+
+        db.query(models.RefreshToken).filter(
+            models.RefreshToken.refresh_token == refresh_token,
+            models.RefreshToken.user_id == info["id"],
+            models.RefreshToken.revoked == False,
+        ).update({"revoked": True})
+
+        return {"refresh_token": new_refresh_token, "access_token": new_access_token}
+    except:
+        raise

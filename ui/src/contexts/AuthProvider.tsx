@@ -30,12 +30,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const valid_url = `${config.backendUrl}/login/refresh`;
         const response = await fetch(valid_url, { credentials: "include" });
+        const res = await response.json();
 
         if (response.status === 200) {
-          // TODO: log user back in
+          console.log("switch tokens");
+          setToken(res.accessToken);
+          const details = parseJwt(res.accessToken);
+          setUser(details);
         } else if (response.status === 401) {
           console.log("handle unauth");
-          // TODO: Do nothing ?
         }
       } catch (err) {
         console.log(err);
@@ -43,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
 
+    // TODO: now only run if...
     restoreSession();
   }, []);
 

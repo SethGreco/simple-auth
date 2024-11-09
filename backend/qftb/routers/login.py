@@ -9,6 +9,7 @@ from ..database import get_db
 from ..schemas import Message, Token
 from ..service.auth import (
     auth_user,
+    check_for_valid_refresh,
     generate_refresh_token,
     generate_token,
     invalidate_refresh_token,
@@ -81,13 +82,27 @@ def login_admin(
 # I will need to check that user in the database to invalidate their refresh token
 # then generate a new access and refresh, store refresh in db and return response.
 @router.get("/refresh")
-def user_valid_check(refreshToken: Annotated[str | None, Cookie()] = None):
+def user_valid_check(
+    response: Response,
+    refreshToken: Annotated[str | None, Cookie()] = None,
+    db: Session = Depends(get_db),
+):
     # if token comes in None return unauth
     if refreshToken is None:
         raise HTTPException(status_code=401, detail="unauth")
 
-    # TODO: return user a new accessToken and refreshToken
-    return True
+    obj = check_for_valid_refresh(refreshToken, db)
+    response.set_cookie(
+        key="refreshToken",
+        value=obj["refresh_token"],
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=60,
+        expires=60,
+    )
+
+    return Token(access_token=obj["access_token"], token_type="bearer")
 
 
 @router.get("/logout")
