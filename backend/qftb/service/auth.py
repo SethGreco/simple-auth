@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..config import settings
 from ..database import get_db
-from ..schemas import Message
-from ..util.password import hash, verify_password
+from ..schemas import JwtInfo, Message, UserInfo
+from ..util.password import verify_password
 
 
-def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> dict:
+def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> UserInfo:
     """
     Authenitcate User
 
@@ -38,10 +38,10 @@ def auth_user(username: str, password: str, db: Session = Depends(get_db)) -> di
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    return {"id": user.id, "username": username}
+    return UserInfo(id=user.id, username=user.email)
 
 
-def generate_token(user_info: dict, expires_delta: timedelta) -> str:
+def generate_token(user_info: UserInfo, expires_delta: timedelta) -> str:
     """
     Generate JWT token
 
@@ -52,20 +52,20 @@ def generate_token(user_info: dict, expires_delta: timedelta) -> str:
     Returns:
     - JWT: String
     """
-    encode = {"sub": user_info["username"], "id": user_info["id"]}
+    encode = {"sub": user_info.username, "id": user_info.id}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp": expires})
     return jwt.encode(encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGO)
 
 
-def generate_refresh_token(user_info: dict, expires_delta: timedelta) -> str:
-    encode = {"id": user_info["id"]}
+def generate_refresh_token(user_info: UserInfo, expires_delta: timedelta) -> str:
+    encode = {"sub": user_info.username, "id": user_info.id}
     expires = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp": expires})
     return jwt.encode(encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGO)
 
 
-def validate_token(authorization: str | None) -> None:
+def validate_token(authorization: str) -> JwtInfo:
     """
     Validate Token
 
@@ -79,16 +79,11 @@ def validate_token(authorization: str | None) -> None:
     Returns:
     - String
     """
-    if authorization is None or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid Authorization header",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
     token = authorization.replace("Bearer ", "")
+    print(token)
     try:
-        jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
+        return JwtInfo(id=decoded["id"], sub=decoded["sub"], exp=decoded["exp"])
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -131,17 +126,18 @@ def store_refresh_token(refresh_token: str, user_id: int, db: Session = Depends(
         raise
 
 
-def invalidate_refresh_token(refresh_token: str, db: Session = Depends(get_db)):
-    info = jwt.decode(refresh_token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
+def invalidate_refresh_token(
+    refresh_token: str, info: JwtInfo, db: Session = Depends(get_db)
+) -> None:
+    if info.exp is not None and datetime.now(timezone.utc) > info.exp:
+        raise HTTPException(detail="refresh token is expired", status_code=401)
 
-    print("refresh_token", refresh_token)
-    print("user info", info)
     try:
         token = (
             db.query(models.RefreshToken)
             .filter(
                 models.RefreshToken.refresh_token == refresh_token,
-                models.RefreshToken.user_id == info["id"],
+                models.RefreshToken.user_id == info.id,
             )
             .first()
         )
@@ -151,17 +147,16 @@ def invalidate_refresh_token(refresh_token: str, db: Session = Depends(get_db)):
 
         token.revoked = True
         db.commit()
-
-        return {"message": "Refresh token invalidated successfully"}
+        print("Refresh token invalidated successfully")
     except Exception as err:
+        print(err)
         raise
 
 
-def check_for_valid_refresh(refresh_token: str, db: Session = Depends(get_db)):
-    info = jwt.decode(refresh_token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
-
-    expires = info["exp"]
-    if datetime.now(timezone.utc).timestamp() > expires:
+def check_for_valid_refresh(
+    refresh_token: str, info: JwtInfo, db: Session = Depends(get_db)
+) -> UserInfo:
+    if info.exp is not None and datetime.now(timezone.utc) > info.exp:
         raise HTTPException(detail="refresh token is expired", status_code=401)
 
     try:
@@ -169,8 +164,8 @@ def check_for_valid_refresh(refresh_token: str, db: Session = Depends(get_db)):
             db.query(models.RefreshToken)
             .filter(
                 models.RefreshToken.refresh_token == refresh_token,
-                models.RefreshToken.user_id == info["id"],
-                models.RefreshToken.revoked == False,
+                models.RefreshToken.user_id == info.id,
+                ~models.RefreshToken.revoked,
             )
             .first()
         )
@@ -178,22 +173,12 @@ def check_for_valid_refresh(refresh_token: str, db: Session = Depends(get_db)):
         if not token:
             raise HTTPException(detail="Token Not found", status_code=404)
 
-        user = db.query(models.User).filter(models.User.id == info["id"]).first()
+        user = db.query(models.User).filter(models.User.id == info.id).first()
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
             )
-        new_obj = {"id": user.id, "username": user.email}
-        new_access_token = generate_token(new_obj, timedelta(minutes=20))
-        new_refresh_token = generate_refresh_token(new_obj, timedelta(days=1))
-
-        db.query(models.RefreshToken).filter(
-            models.RefreshToken.refresh_token == refresh_token,
-            models.RefreshToken.user_id == info["id"],
-            models.RefreshToken.revoked == False,
-        ).update({"revoked": True})
-
-        return {"refresh_token": new_refresh_token, "access_token": new_access_token}
+        return UserInfo(id=user.id, username=user.email)
     except:
         raise

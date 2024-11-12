@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -31,6 +32,17 @@ class UserResponse(BaseSchema):
     first_name: str
     last_name: str
     email: str
+
+
+class UserInfo(BaseSchema):
+    username: str
+    id: int
+
+
+class JwtInfo(BaseSchema):
+    sub: str
+    id: int
+    exp: Optional[datetime]
 
 
 class AdminUserView(BaseSchema):

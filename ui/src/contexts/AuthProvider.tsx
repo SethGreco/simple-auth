@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       const res = await response.json();
       if (res.accessToken) {
+        console.log(res.accessToken);
         setToken(res.accessToken);
         const details = parseJwt(res.accessToken);
         setUser(details);

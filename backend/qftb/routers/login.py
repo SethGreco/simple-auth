@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from ..service.auth import (
     invalidate_refresh_token,
     restrict_ip_address,
     store_refresh_token,
+    validate_token,
 )
 
 router = APIRouter(
@@ -46,7 +47,8 @@ def login_user(
     user_info = auth_user(credentials.username, credentials.password, db)
     access_token = generate_token(user_info, timedelta(minutes=20))
     refresh_token = generate_refresh_token(user_info, timedelta(days=1))
-    res = store_refresh_token(refresh_token, user_info["id"], db)
+    res = store_refresh_token(refresh_token, user_info.id, db)
+    print(res)
     response.set_cookie(
         key="refreshToken",
         value=refresh_token,
@@ -87,14 +89,19 @@ def user_valid_check(
     refreshToken: Annotated[str | None, Cookie()] = None,
     db: Session = Depends(get_db),
 ):
-    # if token comes in None return unauth
     if refreshToken is None:
         raise HTTPException(status_code=401, detail="unauth")
 
-    obj = check_for_valid_refresh(refreshToken, db)
+    info = validate_token(refreshToken)
+    obj = check_for_valid_refresh(refreshToken, info, db)
+    access_token = generate_token(obj, timedelta(minutes=20))
+    refresh_token = generate_refresh_token(obj, timedelta(days=1))
+    invalidate_refresh_token(refreshToken, info, db)
+    res = store_refresh_token(refresh_token, info.id, db)
+    print(res)
     response.set_cookie(
         key="refreshToken",
-        value=obj["refresh_token"],
+        value=refresh_token,
         httponly=True,
         samesite="lax",
         secure=False,
@@ -102,10 +109,11 @@ def user_valid_check(
         expires=60,
     )
 
-    return Token(access_token=obj["access_token"], token_type="bearer")
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/logout")
 def invalidate_refresh(refreshToken: Annotated[str, Cookie()], db: Session = Depends(get_db)):
-    res = invalidate_refresh_token(refreshToken, db)
+    info = validate_token(refreshToken)
+    res = invalidate_refresh_token(refreshToken, info, db)
     return res

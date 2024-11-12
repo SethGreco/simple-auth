@@ -52,7 +52,7 @@ def read_users_non_admin(db: Session = Depends(get_db)):
 )
 def read_single_user_non_admin(
     id: int,
-    authorization: Annotated[str | None, Header()] = None,
+    authorization: Annotated[str, Header()],
     db: Session = Depends(get_db),
 ):
     """
@@ -67,7 +67,7 @@ def read_single_user_non_admin(
     - schemas.UserResponse: A user object containing user details
 
     """
-    validate_token(authorization)
+    validated = validate_token(authorization)
     try:
         user = db.query(models.User).filter(models.User.id == id).one()
         return user
@@ -88,7 +88,7 @@ def read_single_user_non_admin(
         409: {"model": Message},
     },
 )
-def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> dict:
+def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> Message | None:
     """
     POST create a single user
 
