@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,6 +13,8 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String)
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
+    refresh_limit: Mapped[int] = mapped_column(Integer, default=0)
+    last_accessed: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(UTC))
     refresh_tokens = relationship("RefreshToken", back_populates="user")
 
 
@@ -33,9 +35,6 @@ class RefreshToken(Base):
     refresh_token: Mapped[str] = mapped_column(String, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(
         "expires_at", DateTime, nullable=False, default=datetime.now(UTC)
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        "created_at", DateTime, nullable=False, default=datetime.now(UTC)
     )
     revoked: Mapped[bool] = mapped_column(Boolean, default=False)
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")

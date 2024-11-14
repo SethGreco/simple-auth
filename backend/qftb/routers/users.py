@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..database import get_db
 from ..schemas import CreateUser, ErrorResponse, Message, UserResponse
-from ..service.auth import validate_token
+from ..service.auth import decode_token
 from ..util.password import hash
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -67,7 +67,7 @@ def read_single_user_non_admin(
     - schemas.UserResponse: A user object containing user details
 
     """
-    validated = validate_token(authorization)
+    validated = decode_token(authorization)
     try:
         user = db.query(models.User).filter(models.User.id == id).one()
         return user

@@ -24,31 +24,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserDetail | null>(null);
+  const [refreshTimeout, setRefreshTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const valid_url = `${config.backendUrl}/login/refresh`;
-        const response = await fetch(valid_url, { credentials: "include" });
-        const res = await response.json();
-
-        if (response.status === 200) {
-          console.log("switch tokens");
-          setToken(res.accessToken);
-          const details = parseJwt(res.accessToken);
-          setUser(details);
-        } else if (response.status === 401) {
-          console.log("handle unauth");
-        }
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
+    const refresh = async () => {
+      await restoreSession();
     };
-
-    // TODO: now only run if...
-    restoreSession();
+    refresh();
+    return () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+    };
   }, []);
+
+  const restoreSession = async () => {
+    try {
+      const valid_url = `${config.backendUrl}/login/refresh`;
+      const response = await fetch(valid_url, { credentials: "include" });
+      const res = await response.json();
+
+      if (response.status === 200) {
+        console.log("switch tokens", Date.now());
+        setToken(res.accessToken);
+        const details: UserDetail = parseJwt(res.accessToken);
+        setUser(details);
+        scheduleTokenRefresh(details.exp);
+      } else if (response.status === 401) {
+        console.log("handle unauth");
+      }
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  };
+
+  const scheduleTokenRefresh = (exp: number) => {
+    if (refreshTimeout) clearTimeout(refreshTimeout);
+    const expirationTimeMs = exp * 1000;
+    // 30 seconds before access token expires
+    const timerMs = expirationTimeMs - Date.now() - 30000;
+    if (timerMs > 0) {
+      const timeId = setTimeout(async () => {
+        await restoreSession();
+      }, timerMs);
+      setRefreshTimeout(timeId);
+    }
+  };
 
   const loginAction = async (username: string, password: string) => {
     try {
@@ -63,10 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       const res = await response.json();
       if (res.accessToken) {
-        console.log(res.accessToken);
         setToken(res.accessToken);
         const details = parseJwt(res.accessToken);
         setUser(details);
+        scheduleTokenRefresh(details.exp);
         return response.status;
       }
       throw new Error(res.message);
