@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -32,7 +32,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column("user", Integer, ForeignKey(User.id), nullable=False)
-    refresh_token: Mapped[str] = mapped_column(String, nullable=False)
+    refresh_token: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(
         "expires_at", DateTime, nullable=False, default=datetime.now(UTC)
     )

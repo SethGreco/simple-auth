@@ -1,15 +1,10 @@
 from typing import Annotated
 
-import sqlalchemy.exc
-from fastapi import APIRouter, Depends, Header, HTTPException, status
-from psycopg2.errors import UniqueViolation
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Header, status
 
-from .. import models
-from ..database import get_db
-from ..schemas import CreateUser, ErrorResponse, Message, UserResponse
-from ..service.auth import decode_token
-from ..util.password import hash
+from qftb.schemas import CreateUser, ErrorResponse, Message, UserResponse
+from qftb.service.auth_service import AuthenticationManager
+from qftb.service.user_service import UserService
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -20,7 +15,7 @@ router = APIRouter(prefix="/user", tags=["User"])
     summary="Retrieve all users",
     description="Non-sensitive view of user details",
 )
-def read_users_non_admin(db: Session = Depends(get_db)):
+def read_users_non_admin(user_service: UserService = Depends(UserService)):
     """
     Get all users
 
@@ -28,19 +23,12 @@ def read_users_non_admin(db: Session = Depends(get_db)):
     If no users are found, an empty list is returned.
 
     Parameters:
-    - db: The database session dependency.
+    - user_service: UserService class.
 
     Returns:
     - List[schemas.UserResponse]: A list of user objects containing user details.
     """
-    try:
-        users = db.query(models.User).all()
-        return users
-    except Exception as err:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error",
-        ) from err
+    return user_service.get_all_users()
 
 
 @router.get(
@@ -53,8 +41,9 @@ def read_users_non_admin(db: Session = Depends(get_db)):
 def read_single_user_non_admin(
     id: int,
     authorization: Annotated[str, Header()],
-    db: Session = Depends(get_db),
-):
+    auth_manager: AuthenticationManager = Depends(AuthenticationManager),
+    user_service: UserService = Depends(UserService),
+) -> UserResponse:
     """
     Get single user by ID
 
@@ -67,15 +56,8 @@ def read_single_user_non_admin(
     - schemas.UserResponse: A user object containing user details
 
     """
-    validated = decode_token(authorization)
-    try:
-        user = db.query(models.User).filter(models.User.id == id).one()
-        return user
-    except sqlalchemy.exc.NoResultFound as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Resource not found",
-        ) from err
+    validated = auth_manager.decode_token(authorization)
+    return user_service.get_single_user(id)
 
 
 @router.post(
@@ -88,7 +70,9 @@ def read_single_user_non_admin(
         409: {"model": Message},
     },
 )
-def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) -> Message | None:
+def create_single_user(
+    user_payload: CreateUser, user_service: UserService = Depends(UserService)
+) -> Message | None:
     """
     POST create a single user
 
@@ -99,25 +83,4 @@ def create_single_user(user_payload: CreateUser, db: Session = Depends(get_db)) 
     Returns:
     - {}: A user object containing success msg.
     """
-    try:
-        user_insert = models.User(
-            first_name=user_payload.first_name,
-            last_name=user_payload.last_name,
-            email=user_payload.email,
-            hashed_password=hash(user_payload.password),
-        )
-        db.add(user_insert)
-        db.commit()
-        db.refresh(user_insert)
-        return Message(detail="User created successfully")
-    except sqlalchemy.exc.IntegrityError as err:
-        if isinstance(err.orig, UniqueViolation):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="User already exists"
-            ) from err
-    except Exception as err:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create user",
-        ) from err
+    return user_service.create_user(user_payload)
