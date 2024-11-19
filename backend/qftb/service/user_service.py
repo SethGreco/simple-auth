@@ -13,10 +13,10 @@ class UserService:
     def __init__(self, db: Session = Depends(get_db)):
         self.db = db
 
-    def get_all_users(self):
+    def get_all_users(self) -> list[User]:
         try:
             users = self.db.execute(select(User)).scalars().all()
-            return users
+            return list(users)
         except Exception as err:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

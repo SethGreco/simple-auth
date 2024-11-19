@@ -1,10 +1,8 @@
-# from sqlalchemy.orm import Session
 from fastapi.testclient import TestClient
 
 
 def test_read_users_non_admin(client: TestClient):
     res = client.get("/user/")
-
     assert res.status_code == 200
 
 

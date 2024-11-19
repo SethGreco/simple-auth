@@ -45,16 +45,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const res = await response.json();
 
       if (response.status === 200) {
-        console.log("switch tokens", Date.now());
         setToken(res.accessToken);
         const details: UserDetail = parseJwt(res.accessToken);
         setUser(details);
         scheduleTokenRefresh(details.exp);
       } else if (response.status === 401) {
         console.log("handle unauth");
+        // TODO: handle this
       }
     } catch (err) {
-      console.log(err);
+      console.log("this is the error", err);
       throw err;
     }
   };
@@ -78,10 +78,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-          "Content-Type": "application/json",
+          // Authorization: `Basic ${btoa(`${username}:${password}`)}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         credentials: "include",
+        body: new URLSearchParams({
+          username,
+          password,
+        }),
       });
       const res = await response.json();
       if (res.accessToken) {
