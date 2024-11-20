@@ -10,7 +10,7 @@ router = APIRouter(prefix="/user", tags=["User"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[UserResponse],
     summary="Retrieve all users",
     description="Non-sensitive view of user details",
@@ -32,7 +32,7 @@ def read_users_non_admin(user_service: UserService = Depends(UserService)):
 
 
 @router.get(
-    "/{id}/",
+    "/{id}",
     response_model=UserResponse,
     summary="Retrieve single user",
     description="",
@@ -61,7 +61,7 @@ def read_single_user_non_admin(
 
 
 @router.post(
-    "/",
+    "",
     response_model=Message,
     status_code=status.HTTP_201_CREATED,
     responses={

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from qftb.database import get_db
 from qftb.models import User
 from qftb.schemas import Message
+from qftb.util.password import hash
 
 
 class UserService:
@@ -25,7 +26,7 @@ class UserService:
 
     def get_single_user(self, user_id: int) -> User:
         try:
-            user = self.db.execute(select(User).where(User.id == id)).scalar_one()
+            user = self.db.execute(select(User).where(User.id == user_id)).scalar_one()
             return user
         except sqlalchemy.exc.NoResultFound as err:
             raise HTTPException(

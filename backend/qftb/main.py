@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import Base, engine
 from .exceptions import global_handler
-from .routers import admin, health, login, users
+from .routers import admin, auth, health, users
 from .util.openapi import custom_openapi, set_docs_url
 
 # Comment out if you want to build from DDL file.
@@ -21,7 +21,7 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(users.router)
 app.include_router(admin.router)
-app.include_router(login.router)
+app.include_router(auth.router)
 
 origins = [settings.CLIENT_BASE_URL]
 

@@ -10,13 +10,13 @@ from qftb.schemas import Message, Token
 from qftb.service.auth_service import AuthenticationManager
 
 router = APIRouter(
-    prefix="/login",
-    tags=["Login"],
+    prefix="/auth",
+    tags=["Auth"],
     responses={status.HTTP_401_UNAUTHORIZED: {"model": Message}},
 )
 
 
-@router.post("/user/", response_model=Token, status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
 def login_user(
     response: Response,
     credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -49,7 +49,7 @@ def login_user(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.post("/admin/", status_code=status.HTTP_200_OK)
+@router.post("/admin", status_code=status.HTTP_200_OK)
 def login_admin(
     credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
     auth_manager: AuthenticationManager = Depends(AuthenticationManager),
@@ -97,4 +97,4 @@ def invalidate_refresh(
     auth_manager: AuthenticationManager = Depends(AuthenticationManager),
 ) -> Message:
     refresh_user = auth_manager.invalidate_refresh_token(refreshToken)
-    return Message(detail=f"User ${refresh_user} token revoked")
+    return Message(detail=f"User {refresh_user} token revoked")

@@ -8,7 +8,7 @@ from qftb.schemas import AdminUserView
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
-@router.get("/users/", response_model=list[AdminUserView])
+@router.get("/users", response_model=list[AdminUserView])
 def admin_read_users(db: Session = Depends(get_db)):
     """
     GET all users - for ADMIN view

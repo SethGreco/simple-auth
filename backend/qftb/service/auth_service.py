@@ -1,8 +1,9 @@
 import secrets
 from datetime import UTC, datetime, timedelta, timezone
 
+import jwt
 from fastapi import Depends, HTTPException, Request, status
-from jose import JWTError, jwt
+from jwt.exceptions import InvalidTokenError
 from sqlalchemy import delete, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
@@ -136,7 +137,7 @@ class AuthenticationManager:
         try:
             decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGO])
             return JwtInfo(id=decoded["id"], sub=decoded["sub"], exp=decoded["exp"])
-        except JWTError:
+        except InvalidTokenError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
@@ -163,7 +164,7 @@ class AuthenticationManager:
             if last_accessed < datetime.now(timezone.utc):
                 raise HTTPException(detail="refresh token is expired", status_code=401)
             print("Refresh token invalidated successfully")
-            return token.user_id
+            return token.user
         except NoResultFound:
             raise HTTPException(detail="Token Not found", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as err:
