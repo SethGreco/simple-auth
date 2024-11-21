@@ -8,15 +8,12 @@ RUN apt-get update && \
 
 WORKDIR /backend/
 
-RUN pip3 install poetry
+RUN pip3 install poetry && \
+    poetry config virtualenvs.create false
 
-RUN poetry config virtualenvs.create false
+COPY pyproject.toml logging.yml /backend/
 
-COPY pyproject.toml /backend
-
-COPY logging.yml /backend
-
-RUN poetry install --only main
+RUN poetry install --no-cache --only main
 
 COPY /qftb /backend/qftb/
 

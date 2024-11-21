@@ -1,22 +1,22 @@
-import React from 'react';
-import { logout } from '../services/authService';
-import { useNavigate } from 'react-router-dom';
-
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthProvider";
 
 const User: React.FC = () => {
-
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleLogOut = async (event: React.FormEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    await logout();
-    navigate('/home')
-  }
+    auth?.logOut();
+    navigate("/home");
+  };
 
   return (
     <div>
       <h1>User Dashboard</h1>
       <p>This is the user page content.</p>
+      <p>Welcome {auth?.user?.sub}</p>
       <button onClick={handleLogOut}>Log Out</button>
     </div>
   );
