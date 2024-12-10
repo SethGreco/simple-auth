@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const restoreSession = async () => {
     try {
-      const valid_url = `${config.backendUrl}/login/refresh`;
+      const valid_url = `${config.backendUrl}/auth/refresh`;
       const response = await fetch(valid_url, { credentials: "include" });
       const res = await response.json();
 
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loginAction = async (username: string, password: string) => {
     try {
-      const url = `${config.backendUrl}/login/user/`;
+      const url = `${config.backendUrl}/auth/login`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logOut = async () => {
-    const url = `${config.backendUrl}/login/logout`;
+    const url = `${config.backendUrl}/auth/logout`;
     const response = await fetch(url, {
       credentials: "include",
     });

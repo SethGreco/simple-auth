@@ -33,7 +33,7 @@ def login_user(
     - Token
     """
 
-    user_info = auth_manager.authenticate_user(credentials.username, credentials.password)
+    user_info = auth_manager.authenticate_user(credentials.username.lower(), credentials.password)
     access_token = auth_manager.generate_access_token(user_info, timedelta(minutes=15))
     refresh_token = auth_manager.generate_refresh_token(user_info.id)
     response.set_cookie(

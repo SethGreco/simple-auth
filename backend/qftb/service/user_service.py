@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from qftb.database import get_db
 from qftb.models import User
-from qftb.schemas import Message
+from qftb.schemas import CreateUser, Message
 from qftb.util.password import hash
 
 
@@ -34,12 +34,12 @@ class UserService:
                 detail="Resource not found",
             ) from err
 
-    def create_user(self, user_payload) -> Message | None:
+    def create_user(self, user_payload: CreateUser) -> Message | None:
         try:
             user_insert = User(
-                first_name=user_payload.first_name,
-                last_name=user_payload.last_name,
-                email=user_payload.email,
+                first_name=user_payload.first_name.lower(),
+                last_name=user_payload.last_name.lower(),
+                email=user_payload.email.lower(),
                 hashed_password=hash(user_payload.password),
             )
             self.db.add(user_insert)
