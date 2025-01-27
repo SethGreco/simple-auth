@@ -164,7 +164,7 @@ class AuthenticationManager:
             if last_accessed < datetime.now(timezone.utc):
                 raise HTTPException(detail="refresh token is expired", status_code=401)
             print("Refresh token invalidated successfully")
-            return token.user
+            return token.user_id
         except NoResultFound:
             raise HTTPException(detail="Token Not found", status_code=status.HTTP_404_NOT_FOUND)
         except Exception as err:
@@ -176,6 +176,7 @@ class AuthenticationManager:
 
     def validate_refresh_session(self, refresh_token: str) -> UserInfo:
         refresh_user = self.invalidate_refresh_token(refresh_token)
+        print(refresh_user)
         try:
             res = self.db.execute(select(User).where(User.id == refresh_user))
             user = res.scalar_one()
